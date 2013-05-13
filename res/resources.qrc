@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/textures">
+        <file alias="cubetex">img/cube.png</file>
+        <file alias="layout">img/layout.bmp</file>
+        <file alias="world">img/world.jpg</file>
+        <file alias="hazard">img/hazard-stripes-texture.jpg</file>
+        <file alias="retro">img/retro-background.jpg</file>
+    </qresource>
+    <qresource prefix="/qml">
+        <file alias="main">qml/main.qml</file>
+        <file alias="Slider.qml">qml/Slider.qml</file>
+        <file alias="MonitorMesh.qml">qml/MonitorMesh.qml</file>
+        <file alias="MeshUnit.qml">qml/MeshUnit.qml</file>
+        <file alias="Shader.qml">qml/Shader.qml</file>
+        <file alias="Scene.qml">qml/Scene.qml</file>
+        <file alias="Monitor3D.qml">qml/Monitor3D.qml</file>
+    </qresource>
+</RCC>
