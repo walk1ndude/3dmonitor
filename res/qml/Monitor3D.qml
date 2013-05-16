@@ -81,8 +81,6 @@ Viewport {
         so that the front boundaries of the monitor don't go anywhere */
         cameraGL.eye = Qt.vector3d(headX,- headY, cameraGL.nearPlane)
         cameraGL.center = Qt.vector3d(headX, - headY,0)
-       // lightGL.position = Qt.vector3d(headX,- headY, cameraGL.nearPlane)
-       // lightGL.spotDirection = Qt.vector3d(headX,- headY, scene3D.aspectRatio * scene3D.halfScale)
     }
 
     function setSize(newSize){

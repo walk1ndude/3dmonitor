@@ -10,24 +10,24 @@ using namespace std;
 class CameraOutput : public QQuickPaintedItem
 {
     Q_OBJECT
-    Q_PROPERTY(QImage cameraimage
-               READ cameraimage
-               WRITE setCameraimage
-               NOTIFY cameraimageChanged)
+    Q_PROPERTY(QImage cameraImage
+               READ cameraImage
+               WRITE setCameraImage
+               NOTIFY signalCameraImageChanged)
 
 private:
-    QImage CVImage;
+    QImage cvImage;
 
 public:
     explicit CameraOutput(QQuickItem *parent = nullptr);
-    QImage cameraimage();
+    QImage cameraImage();
 
 signals:
-    void cameraimageChanged();
+    void signalCameraImageChanged();
 
 public slots:
     void paint(QPainter *painter);
-    void setCameraimage(const QImage &image);
+    void setCameraImage(const QImage &image);
 };
 
 #endif // CAMERAOUTPUT_H

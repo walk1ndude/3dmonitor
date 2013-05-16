@@ -6,16 +6,16 @@ CameraOutput::CameraOutput(QQuickItem *parent) : QQuickPaintedItem(parent){
 
 void CameraOutput::paint(QPainter *painter){
     //draw image on CameraOutput
-    painter->drawImage(0,0,CVImage);
+    painter->drawImage(0,0,cvImage);
 }
 
-QImage CameraOutput::cameraimage(){
-    return CVImage;
+QImage CameraOutput::cameraImage(){
+    return cvImage;
 }
 
-void CameraOutput::setCameraimage(const QImage &image){
+void CameraOutput::setCameraImage(const QImage &image){
     // recieve new image from camera thread and paint it
-    CVImage = image.scaled(320,240,Qt::KeepAspectRatio);
+    cvImage = image.scaled(320,240,Qt::KeepAspectRatio);
     update();
-    emit cameraimageChanged();
+    emit signalCameraImageChanged();
 }

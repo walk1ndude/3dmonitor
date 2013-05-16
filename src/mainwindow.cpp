@@ -1,5 +1,5 @@
 #include <QtCore/QDebug>
-#include <QtWidgets/QApplication>
+#include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QOpenGLContext>
@@ -17,20 +17,20 @@ MainWindow::MainWindow(QWindow *parent): QQuickView(parent)
     // register CameraOutput
     registerTypes();
 
-    CameraCapture *CVCameraCapture = new CameraCapture;
+    cvCameraCapture = new CameraCapture;
 
-    if (CVCameraCapture->initializeCV()){
+    if (cvCameraCapture->initializeCV()){
 
-        QThread *CVThread = new QThread;
-        CVCameraCapture->moveToThread(CVThread);
+        cvThread = new QThread;
+        cvCameraCapture->moveToThread(cvThread);
 
         // load qml files
         loadQML();
         // connect some qml elements with camera processing
-        makeConnections(CVCameraCapture);
+        makeConnections(cvCameraCapture);
 
         // start qthread, responsible for camera processing
-        CVThread->start();
+        cvThread->start();
 
         // set initial window geometry
         initialGeometry();
@@ -89,38 +89,38 @@ void MainWindow::loadQML(){
     this->setSource(QUrl("qrc:/qml/main"));
 }
 
-void MainWindow::makeConnections(CameraCapture *CVCameraCapture){
+void MainWindow::makeConnections(CameraCapture *cvCameraCapture){
     // close on X or esc
     connect((QObject*)this->engine(),SIGNAL(quit()),this,SLOT(close()));
 
     QObject *root = this->rootObject();
 
-    // connect CVCameraCapture to qml, so every 34ms (30 fps) we get a new frame
-    connect(root,SIGNAL(signalRecapture()),CVCameraCapture,SLOT(recapture()));
+    // connect cvCameraCapture to qml, so every 34ms (30 fps) we get a new frame
+    connect(root,SIGNAL(signalRecapture()),cvCameraCapture,SLOT(recapture()));
 
-    connect(CVCameraCapture,SIGNAL(signalRecapture(QImage)),root->findChild<CameraOutput*>("CameraOutput"),SLOT(setCameraimage(QImage)));
+    connect(cvCameraCapture,SIGNAL(signalRecapture(QImage)),root->findChild<CameraOutput*>("CameraOutput"),SLOT(setCameraImage(QImage)));
 
     // send head coordinates to monitor
-    connect(CVCameraCapture,SIGNAL(signalRedraw(QVariant,QVariant)),root->findChild<QObject*>("Monitor3D"),SLOT(redraw(QVariant,QVariant)));
+    connect(cvCameraCapture,SIGNAL(signalRedraw(QVariant,QVariant)),root->findChild<QObject*>("Monitor3D"),SLOT(redraw(QVariant,QVariant)));
 
-    // connect keys to some CVCameraCapture parameters: get backproject image, get HSV and so on
-    connect(root,SIGNAL(signalBpressed()),CVCameraCapture,SLOT(keyBpressed()),Qt::DirectConnection);
-    connect(root,SIGNAL(signalHpressed()),CVCameraCapture,SLOT(keyHpressed()),Qt::DirectConnection);
-    connect(root,SIGNAL(signalKpressed()),CVCameraCapture,SLOT(keyKpressed()),Qt::DirectConnection);
-    connect(root,SIGNAL(signalRpressed()),CVCameraCapture,SLOT(keyRpressed()),Qt::DirectConnection);
+    // connect keys to some cvCameraCapture parameters: get backproject image, get HSV and so on
+    connect(root,SIGNAL(signalBpressed()),cvCameraCapture,SLOT(keyBpressed()),Qt::DirectConnection);
+    connect(root,SIGNAL(signalHpressed()),cvCameraCapture,SLOT(keyHpressed()),Qt::DirectConnection);
+    connect(root,SIGNAL(signalKpressed()),cvCameraCapture,SLOT(keyKpressed()),Qt::DirectConnection);
+    connect(root,SIGNAL(signalRpressed()),cvCameraCapture,SLOT(keyRpressed()),Qt::DirectConnection);
 
     // connect sliders to some CVCameraCapture parameters: vmax, vmin, smin
-    connect(root,SIGNAL(sminChanged(int)),CVCameraCapture,SLOT(sminchanged(int)),Qt::DirectConnection);
-    connect(root,SIGNAL(vminChanged(int)),CVCameraCapture,SLOT(vminchanged(int)),Qt::DirectConnection);
-    connect(root,SIGNAL(vmaxChanged(int)),CVCameraCapture,SLOT(vmaxchanged(int)),Qt::DirectConnection);
+    connect(root,SIGNAL(sminChanged(int)),cvCameraCapture,SLOT(sminchanged(int)),Qt::DirectConnection);
+    connect(root,SIGNAL(vminChanged(int)),cvCameraCapture,SLOT(vminchanged(int)),Qt::DirectConnection);
+    connect(root,SIGNAL(vmaxChanged(int)),cvCameraCapture,SLOT(vmaxchanged(int)),Qt::DirectConnection);
 
     // to go fullscreen
     connect(root,SIGNAL(windowStateChanged()),this,SLOT(changeWindowState()));
 }
 
 MainWindow::~MainWindow(){
-    delete CVCameraCapture;
-    delete CVThread;
+    delete cvCameraCapture;
+    delete cvThread;
 }
 
 void MainWindow::changeWindowState(){

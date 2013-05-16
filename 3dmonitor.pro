@@ -6,7 +6,7 @@
 
 QT       += core gui opengl quick qml 3d 3dquick
 
-greaterThan(QT_MAJOR_VERSION, 5): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 5)
 
 TARGET = 3dmonitor
 TEMPLATE = app

@@ -24,17 +24,17 @@ const char *CAMError::meaning(){
     return "Wrong SearchWindow position!";
 }
 
-CapturedFace::CapturedFace(Mat &frame, Rect Face, Point FrameSize, int vminv, int vmaxv, int sminv)
+CapturedFace::CapturedFace(Mat &frame, Rect face, Point cameraSize, int vminv, int vmaxv, int sminv)
 {
     // set CAMShift initial parameters
-    CVFrameSize = FrameSize;
+    cvFrameSize = cameraSize;
     vmin = vminv;
     vmax = vmaxv;
     smin = sminv;
     smax = 250;
 
-    CVisBackProj = false;
-    CVKalmanEnabled = false;
+    cvisBackProj = false;
+    cvKalmanEnabled = false;
 
     w = frame.size().width;
     h = frame.size().height;
@@ -43,23 +43,23 @@ CapturedFace::CapturedFace(Mat &frame, Rect Face, Point FrameSize, int vminv, in
     sat.create(h,w,CV_8UC1);
 
     // initial search window is the rectangle detected by Haar, where face is
-    SearchWindow = Face;
+    searchWindow = face;
 
     updateImage(frame);
-    kalmanInit(Face);
+    kalmanInit(face);
 
 }
 
-void CapturedFace::kalmanInit(Rect Face){
+void CapturedFace::kalmanInit(Rect face){
 
-    KF.init(11,5,0);
+    kF.init(11,5,0);
 
     /* transition matrix:
     11 state: X, Y, Width, Height, Angle, dX, dY, ddX, ddY, dAngle, ddAngle
     5 measurement: X, Y, Width, Height, Angle
     */
 
-    KF.transitionMatrix = *(Mat_<float>(11,11) << 1, 0, 0, 0, 0, 1, 0, 0.5,   0, 0,   0,
+    kF.transitionMatrix = *(Mat_<float>(11,11) << 1, 0, 0, 0, 0, 1, 0, 0.5,   0, 0,   0,
                                                   0, 1, 0, 0, 0, 0, 1,   0, 0.5, 0,   0,
                                                   0, 0, 1, 0, 0, 0, 0,   0,   0, 0,   0,
                                                   0, 0, 0, 1, 0, 0, 0,   0,   0, 0,   0,
@@ -74,24 +74,24 @@ void CapturedFace::kalmanInit(Rect Face){
     measurement.setTo(Scalar(0));
 
     // set initial position of the head: X, Y, W, H, Angle (0, because Haar cascade doesn't work with angles)
-    KF.statePre.at<float>(0) = Face.x + Face.width / 2;
-    KF.statePre.at<float>(1) = Face.y + Face.height / 2;
-    KF.statePre.at<float>(2) = Face.width;
-    KF.statePre.at<float>(3) = Face.height;
-    KF.statePre.at<float>(4) = 0;
+    kF.statePre.at<float>(0) = face.x + face.width / 2;
+    kF.statePre.at<float>(1) = face.y + face.height / 2;
+    kF.statePre.at<float>(2) = face.width;
+    kF.statePre.at<float>(3) = face.height;
+    kF.statePre.at<float>(4) = 0;
 
-    KF.statePre.at<float>(5) = 0;
-    KF.statePre.at<float>(6) = 0;
-    KF.statePre.at<float>(7) = 0;
-    KF.statePre.at<float>(8) = 0;
-    KF.statePre.at<float>(9) = 0;
-    KF.statePre.at<float>(10) = 0;
+    kF.statePre.at<float>(5) = 0;
+    kF.statePre.at<float>(6) = 0;
+    kF.statePre.at<float>(7) = 0;
+    kF.statePre.at<float>(8) = 0;
+    kF.statePre.at<float>(9) = 0;
+    kF.statePre.at<float>(10) = 0;
 
     // initialize Kalman filter matrices
-    setIdentity(KF.measurementMatrix);
-    setIdentity(KF.processNoiseCov, Scalar::all(1e-5));
-    setIdentity(KF.measurementNoiseCov, Scalar::all(1e-2));
-    setIdentity(KF.errorCovPost, Scalar::all(.1));
+    setIdentity(kF.measurementMatrix);
+    setIdentity(kF.processNoiseCov, Scalar::all(1e-5));
+    setIdentity(kF.measurementNoiseCov, Scalar::all(1e-2));
+    setIdentity(kF.errorCovPost, Scalar::all(.1));
 
 }
 
@@ -112,9 +112,9 @@ void CapturedFace::updateImage(const Mat& frame) {
 
 void CapturedFace::recalcHist(){
     // recalculate histogram of the tracking head based on hue and saturation channels
-    Mat roi_hue(hue,SearchWindow),
-        roi_sat(sat,SearchWindow),
-        roi_mask(mask,SearchWindow),
+    Mat roi_hue(hue,searchWindow),
+        roi_sat(sat,searchWindow),
+        roi_mask(mask,searchWindow),
         input[] = {roi_hue, roi_sat};
 
     calcHist(input,2,channels,roi_mask,hist,2,histSize,histRanges);
@@ -122,10 +122,10 @@ void CapturedFace::recalcHist(){
 
 bool CapturedFace::checkSearchWindow(){
     // check if the search window is in the boundaries of the frame
-    return SearchWindow.x >= 0 && SearchWindow.y >= 0 &&
-            SearchWindow.x + SearchWindow.width <= CVFrameSize.x &&
-            SearchWindow.height <= CVFrameSize.y && SearchWindow.width > 0
-            && SearchWindow.height > 0;
+    return searchWindow.x >= 0 && searchWindow.y >= 0 &&
+            searchWindow.x + searchWindow.width <= cvFrameSize.x &&
+            searchWindow.height <= cvFrameSize.y && searchWindow.width > 0
+            && searchWindow.height > 0;
 }
 
 RotatedRect CapturedFace::kalmanPrediction(RotatedRect &trackBox){
@@ -137,7 +137,7 @@ RotatedRect CapturedFace::kalmanPrediction(RotatedRect &trackBox){
     measurement(4) = trackBox.angle;
 
     // use the filter, make correction to the head position
-    Mat estimated = KF.correct(measurement);
+    Mat estimated = kF.correct(measurement);
 
     return RotatedRect(Point(estimated.at<float>(0),estimated.at<float>(1)),
                        Size(estimated.at<float>(2),estimated.at<float>(3)),
@@ -149,7 +149,7 @@ RotatedRect CapturedFace::camTrack(Mat& frame){
     updateImage(frame);
     recalcHist();
 
-    prediction = KF.predict();
+    prediction = kF.predict();
 
     Mat input[] = {hue, sat};
 
@@ -161,10 +161,10 @@ RotatedRect CapturedFace::camTrack(Mat& frame){
     medianBlur(frame,frame,3);
 
     // set frame to backproject if we want to see it (user pressed key B)
-    frame = (CVisBackProj) ? backproj : frame;
+    frame = (cvisBackProj) ? backproj : frame;
 
     // get head parameters by CAMShift
-    RotatedRect trackBox = CamShift(backproj, SearchWindow,
+    RotatedRect trackBox = CamShift(backproj, searchWindow,
                                     TermCriteria(TermCriteria::COUNT|TermCriteria::EPS, 20, 0.01));
 
     // if window is out of the frame
@@ -172,7 +172,7 @@ RotatedRect CapturedFace::camTrack(Mat& frame){
         throw CAMError();
 
     // return head parameters based on Kalman filter or on CAMShift only
-    return (CVKalmanEnabled) ? kalmanPrediction(trackBox) : trackBox;
+    return (cvKalmanEnabled) ? kalmanPrediction(trackBox) : trackBox;
 }
 
 void CapturedFace::setSmin(int value){
@@ -188,13 +188,13 @@ void CapturedFace::setVmax(int value){
 }
 
 void CapturedFace::setCVBackProj(){
-    CVisBackProj = !CVisBackProj;
+    cvisBackProj = !cvisBackProj;
 }
 
 bool CapturedFace::getCVBackProj(){
-    return CVisBackProj;
+    return cvisBackProj;
 }
 
 void CapturedFace::setKalman(){
-    CVKalmanEnabled = !CVKalmanEnabled;
+    cvKalmanEnabled = !cvKalmanEnabled;
 }

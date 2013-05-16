@@ -23,14 +23,14 @@ public:
     bool isValid();
 
 private:
-    CameraCapture* CVCameraCapture;
-    QThread* CVThread;
+    CameraCapture* cvCameraCapture;
+    QThread* cvThread;
     qreal aspectRatio, fullHeight;
     bool isValidWindow;
 
     void registerTypes();
     void loadQML();
-    void makeConnections(CameraCapture *CVCameraCapture);
+    void makeConnections(CameraCapture *cvCameraCapture);
     QSize getScreen0Coordinates();
     void setProperties();
     void initialGeometry();

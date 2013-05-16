@@ -19,7 +19,7 @@ public:
 class CapturedFace
 {
 public:
-   CapturedFace(Mat& frame, Rect Face, Point CameraSize, int vminv, int vmaxv, int sminv);
+   CapturedFace(Mat& frame, Rect face, Point cameraSize, int vminv, int vmaxv, int sminv);
    RotatedRect camTrack(Mat& frame);
 
    void setSmin(int);
@@ -38,9 +38,9 @@ private:
    int binsS;
    int w;
    int h;
-   bool CVisBackProj;
-   bool CVKalmanEnabled;
-   Point CVFrameSize;
+   bool cvisBackProj;
+   bool cvKalmanEnabled;
+   Point cvFrameSize;
    Mat frame;
    Mat hsv;
    Mat hue;
@@ -52,8 +52,8 @@ private:
    Mat processNoise;
    Mat_<float> measurement;
    MatND hist, backproj;
-   Rect SearchWindow;
-   KalmanFilter KF;
+   Rect searchWindow;
+   KalmanFilter kF;
 
    bool checkSearchWindow();
    void recalcHist();

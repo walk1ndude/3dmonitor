@@ -36,30 +36,30 @@ private:
 
     unsigned int avcountMax;
 
-    bool CVisHSV;
+    bool cvisHSV;
 
-    QMutex TrackingNow;
+    QMutex trackingNow;
 
-    qreal CVRadius;
+    qreal cvRadius;
 
-    Mode CVMode;
+    Mode cvMode;
 
-    Size CVFrameSize;
+    Size cvFrameSize;
 
-    Point CVAverageHeadPos;
+    Point cvAverageHeadPos;
 
-    VideoCapture CVCapture;
+    VideoCapture cvCapture;
 
-    CascadeClassifier CVCascadeFace;
-    CascadeClassifier CVCascadeNose;
-    CascadeClassifier CVCascadeEye;
+    CascadeClassifier cvCascadeFace;
+    CascadeClassifier cvCascadeNose;
+    CascadeClassifier cvCascadeEye;
 
-    Mat CVFrame;
+    Mat cvFrame;
 
     deque<RotatedRect>averagePosition;
-    CapturedFace* CVCapturedFace;
+    CapturedFace* cvCapturedFace;
 
-    QImage Mat2QImage(Mat image);
+    QImage mat2QImage(Mat image);
 
     QImage getFace();
 
@@ -72,7 +72,7 @@ private:
     void deleteFaceCam();
 
 signals:
-    void signalRedraw(QVariant HeadX, QVariant HeadY);
+    void signalRedraw(QVariant headX, QVariant headY);
     void signalError(QString);
     void signalRecapture(QImage);
 
