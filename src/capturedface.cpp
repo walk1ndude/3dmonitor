@@ -24,10 +24,10 @@ const char *CAMError::meaning(){
     return "Wrong SearchWindow position!";
 }
 
-CapturedFace::CapturedFace(Mat &frame, Rect face, Point cameraSize, int vminv, int vmaxv, int sminv)
+CapturedFace::CapturedFace(Mat &frame, Rect face, int vminv, int vmaxv, int sminv)
 {
     // set CAMShift initial parameters
-    cvFrameSize = cameraSize;
+    cvFrameSize = frame.size();
     vmin = vminv;
     vmax = vmaxv;
     smin = sminv;
@@ -36,11 +36,8 @@ CapturedFace::CapturedFace(Mat &frame, Rect face, Point cameraSize, int vminv, i
     cvisBackProj = false;
     cvKalmanEnabled = false;
 
-    w = frame.size().width;
-    h = frame.size().height;
-
-    hue.create(h,w,CV_8UC1);
-    sat.create(h,w,CV_8UC1);
+    hue.create(cvFrameSize,CV_8UC1);
+    sat.create(cvFrameSize,CV_8UC1);
 
     // initial search window is the rectangle detected by Haar, where face is
     searchWindow = face;
@@ -55,21 +52,21 @@ void CapturedFace::kalmanInit(Rect face){
     kF.init(11,5,0);
 
     /* transition matrix:
-    11 state: X, Y, Width, Height, Angle, dX, dY, ddX, ddY, dAngle, ddAngle
-    5 measurement: X, Y, Width, Height, Angle
-    */
+11 state: X, Y, Width, Height, Angle, dX, dY, ddX, ddY, dAngle, ddAngle
+5 measurement: X, Y, Width, Height, Angle
+*/
 
-    kF.transitionMatrix = *(Mat_<float>(11,11) << 1, 0, 0, 0, 0, 1, 0, 0.5,   0, 0,   0,
-                                                  0, 1, 0, 0, 0, 0, 1,   0, 0.5, 0,   0,
-                                                  0, 0, 1, 0, 0, 0, 0,   0,   0, 0,   0,
-                                                  0, 0, 0, 1, 0, 0, 0,   0,   0, 0,   0,
-                                                  0, 0, 0, 0, 1, 0, 0,   1,   0, 0, 0.5,
-                                                  0, 0, 0, 0, 0, 1, 0,   1,   0, 0,   0,
-                                                  0, 0, 0, 0, 0, 0, 1,   0,   1, 0,   0,
-                                                  0, 0, 0, 0, 0, 0, 0,   1,   0, 0,   0,
-                                                  0, 0, 0, 0, 0, 0, 0,   0,   1, 0,   0,
-                                                  0, 0, 0, 0, 0, 0, 0,   0,   0, 1,   1,
-                                                  0, 0, 0, 0, 0, 0, 0,   0,   0, 0,   1);
+    kF.transitionMatrix = *(Mat_<float>(11,11) << 1, 0, 0, 0, 0, 1, 0, 0.5, 0, 0, 0,
+                                                  0, 1, 0, 0, 0, 0, 1, 0, 0.5, 0, 0,
+                                                  0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                  0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+                                                  0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0.5,
+                                                  0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0,
+                                                  0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0,
+                                                  0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+                                                  0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+                                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+                                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
     measurement = Mat_<float>(5,1);
     measurement.setTo(Scalar(0));
 
@@ -157,8 +154,6 @@ RotatedRect CapturedFace::camTrack(Mat& frame){
     calcBackProject(input,2,channels,hist,backproj,histRanges);
     backproj &= mask;
     threshold(backproj,backproj,smin,255, THRESH_BINARY);
-
-    medianBlur(frame,frame,3);
 
     // set frame to backproject if we want to see it (user pressed key B)
     frame = (cvisBackProj) ? backproj : frame;

@@ -43,6 +43,8 @@ Item3D {
         offAxisProjectionMatrix: scene.offAxisProjectionMatrix
         material: Material {
             shininess: 128
+            ambientColor: "#EEDD00"
+            emittedLight: "#00FFFF"
 
         }
     }
@@ -53,6 +55,8 @@ Item3D {
         offAxisProjectionMatrix: scene.offAxisProjectionMatrix
         material: Material {
             shininess: 120
+            ambientColor: "#EEDD00"
+            emittedLight: "#00FF00"
         }
     }
 
@@ -60,5 +64,10 @@ Item3D {
         id: programTeapot
         texture: "qrc:/textures/retro"
         offAxisProjectionMatrix:scene.offAxisProjectionMatrix
+        material: Material {
+            shininess: 120
+            ambientColor: "#EEDD00"
+            emittedLight: "#00FF00"
+        }
     }
 }

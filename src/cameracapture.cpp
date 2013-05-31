@@ -9,14 +9,12 @@
 
 CameraCapture::CameraCapture(QObject *parent) : QObject(parent){
 
-    cvFrameSize = Point(640,480);
-    // git test
     cvisHSV = false;
 
     cvMode = DETECTION;
 
-    cvAverageHeadPos = Point(0,0);
-    cvRadius = 3;
+    cvAverageFacePos = Point(0,0);
+    cvRadius = 7;
 
     avcountMax = 7;
 
@@ -33,13 +31,15 @@ CameraCapture::~CameraCapture(){
     cvCapture.release();
 }
 
-bool CameraCapture::initializeCV(){
+bool CameraCapture::initializeCV(Size cvFrameSize){
 
     if (!cvCapture.open(CV_CAP_ANY)){
             emit signalError("Can't open camera device");
             qDebug() << "Can't open camera device";
             return false;
         }
+
+    this->cvFrameSize = cvFrameSize;
 
     // set camera resolution
     cvCapture.set(CV_CAP_PROP_FRAME_WIDTH, cvFrameSize.width);
@@ -143,16 +143,16 @@ void CameraCapture::doCamshift(){
     Rect trackHRect = getApproxPosition(trackH);
 
     //get the center of the face, calculated by getApproxPosition
-    Point head;
-    head.x = trackHRect.x + trackHRect.width / 2,
-    head.y = trackHRect.y + trackHRect.height / 2;
+    Point face;
+    face.x = trackHRect.x + trackHRect.width / 2,
+    face.y = trackHRect.y + trackHRect.height / 2;
 
     // if center is far enough, change average center
-    if (abs(head.x - cvAverageHeadPos.x) + abs(head.y - cvAverageHeadPos.y) >= cvRadius)
-        cvAverageHeadPos = head;
+    if (abs(face.x - cvAverageFacePos.x) + abs(face.y - cvAverageFacePos.y) >= cvRadius)
+        cvAverageFacePos = face;
 
     // send coordinates to the monitor
-    emit signalRedraw(QVariant(cvAverageHeadPos.x),QVariant(cvAverageHeadPos.y));
+    emit signalRedraw(QVariant(cvAverageFacePos.x),QVariant(cvAverageFacePos.y));
 
     // mark face position on the frame
     paintImage(trackHRect,trackH);
@@ -238,9 +238,9 @@ void CameraCapture::doHaar(){
                   Scalar(255, 0, 0), 2, 8, 0 );
 
         // now we can track the face with CAMShift
-        cvCapturedFace = new CapturedFace(cvFrame,face,cvFrameSize,vmin,vmax,smin);
+
+        cvCapturedFace = new CapturedFace(cvFrame,face,vmin,vmax,smin);
         cvMode = TRACKING;
-        doCamshift();
     }
 
 }

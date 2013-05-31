@@ -87,9 +87,12 @@ Item {
         id: mouseS
         anchors.fill: slider
         hoverEnabled: true
-        onPositionChanged: if (mouseX >= handle.x && mouseX <= handle.x + handle.width)
+        onPositionChanged: if (mouseX >= handle.x && mouseX <= handle.x + handle.width) {
                                popup.visible = true;
-                           else popup.visible = false;
+                           }
+                           else {
+                               popup.visible = false;
+                           }
         onExited: popup.visible = false
     }
 

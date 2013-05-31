@@ -19,7 +19,9 @@ MainWindow::MainWindow(QWindow *parent): QQuickView(parent)
 
     cvCameraCapture = new CameraCapture;
 
-    if (cvCameraCapture->initializeCV()){
+    cvFrameSize = Size(320,240);
+
+    if (cvCameraCapture->initializeCV(cvFrameSize)){
 
         cvThread = new QThread;
         cvCameraCapture->moveToThread(cvThread);
@@ -41,6 +43,7 @@ MainWindow::MainWindow(QWindow *parent): QQuickView(parent)
         isValidWindow = false;
     }
 }
+
 
 bool MainWindow::isValid(){
     return isValidWindow;
@@ -75,9 +78,12 @@ void MainWindow::setProperties(){
     QSize sizeD = getScreen0Coordinates();
     aspectRatio = qreal(sizeD.width()) / sizeD.height();
     fullHeight = sizeD.height();
-    this->rootContext()->setContextProperty("fullHeight", fullHeight);
+
+    QQmlContext * root = this->rootContext();
+
+    root->setContextProperty("fullHeight", fullHeight);
     // full screen width / full screen height
-    this->rootContext()->setContextProperty("aspectRatio", aspectRatio);
+    root->setContextProperty("aspectRatio", aspectRatio);
 }
 
 void MainWindow::loadQML(){
@@ -89,16 +95,19 @@ void MainWindow::loadQML(){
     this->setSource(QUrl("qrc:/qml/main"));
 }
 
-void MainWindow::makeConnections(CameraCapture *cvCameraCapture){
+void MainWindow::makeConnections(CameraCapture * cvCameraCapture){
     // close on X or esc
     connect((QObject*)this->engine(),SIGNAL(quit()),this,SLOT(close()));
 
-    QObject *root = this->rootObject();
+    QObject * root = this->rootObject();
 
     // connect cvCameraCapture to qml, so every 34ms (30 fps) we get a new frame
     connect(root,SIGNAL(signalRecapture()),cvCameraCapture,SLOT(recapture()));
 
-    connect(cvCameraCapture,SIGNAL(signalRecapture(QImage)),root->findChild<CameraOutput*>("CameraOutput"),SLOT(setCameraImage(QImage)));
+    QObject * output = this->rootObject()->findChild<CameraOutput*>("CameraOutput");
+
+    connect(cvCameraCapture,SIGNAL(signalRecapture(QImage)),output,SLOT(setCameraImage(QImage)));
+    output->setProperty("size",QSize(cvFrameSize.width,cvFrameSize.height));
 
     // send head coordinates to monitor
     connect(cvCameraCapture,SIGNAL(signalRedraw(QVariant,QVariant)),root->findChild<QObject*>("Monitor3D"),SLOT(redraw(QVariant,QVariant)));

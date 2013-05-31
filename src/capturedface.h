@@ -19,7 +19,7 @@ public:
 class CapturedFace
 {
 public:
-   CapturedFace(Mat& frame, Rect face, Point cameraSize, int vminv, int vmaxv, int sminv);
+   CapturedFace(Mat& frame, Rect face, int vminv, int vmaxv, int sminv);
    RotatedRect camTrack(Mat& frame);
 
    void setSmin(int);
@@ -36,8 +36,6 @@ private:
    int smax;
    int binsH;
    int binsS;
-   int w;
-   int h;
    bool cvisBackProj;
    bool cvKalmanEnabled;
    Point cvFrameSize;

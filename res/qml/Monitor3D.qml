@@ -11,13 +11,13 @@ Viewport {
     width: size.width
     height: size.height
 
-    property size frameSize: Qt.size(640,480)
+    property size frameSize: Qt.size(cameraOutput.size.width,cameraOutput.size.height)
     property real ratioX: ratioZ * 2 * scene3D.halfScaleRatio / frameSize.width
     property real ratioY: ratioZ * 2 * scene3D.halfScale / frameSize.height
     property real ratioZ: 1 // some ratio depending on distance to the viewer, do not know how to use for now
 
-    property int headX: 0
-    property int headY: 0
+    property int faceX: 0
+    property int faceY: 0
 
     property real aspectFullScreen: scene3D.aspectFullScreen
 
@@ -35,7 +35,6 @@ Viewport {
         id: lightGL
         position:  Qt.vector3d(0, 0, cameraGL.nearPlane)
         spotDirection: Qt.vector3d(0,0,scene3D.aspectRatio * scene3D.halfScale)
-
     }
 
     Scene {
@@ -43,11 +42,11 @@ Viewport {
         offAxisProjectionMatrix: getFrustrum()
     }
 
-    function redraw(HeadX,HeadY) {
+    function redraw(faceXv,faceYv) {
 
         // recalculate head position, where it will be on the scene
-        headX = (HeadX - frameSize.width / 2) * ratioX
-        headY = (HeadY - frameSize.height / 2) * ratioY
+        faceX = (faceXv - frameSize.width / 2) * ratioX
+        faceY = (faceYv - frameSize.height / 2) * ratioY
         parallaxEffect()
 
     }
@@ -57,9 +56,9 @@ Viewport {
         // get new off axis projection, so we need to calculate new frustrum
 
         var rightMinusLeft = 2 * scene3D.halfScaleRatio
-        var rightPlusLeft = - 2 * headX
+        var rightPlusLeft = - 2 * faceX
         var topMinusBottom = 2 * scene3D.halfScale
-        var topPlusBottom = 2 * headY
+        var topPlusBottom = 2 * faceY
         var farMinusNear = cameraGL.farPlane - cameraGL.nearPlane
         var farPlusNear = cameraGL.farPlane + cameraGL.nearPlane
         var nearPlaneMul2 = 2 * cameraGL.nearPlane
@@ -79,8 +78,11 @@ Viewport {
 
         /* reset the camera position, so it view directly in the frustrum,
         so that the front boundaries of the monitor don't go anywhere */
-        cameraGL.eye = Qt.vector3d(headX,- headY, cameraGL.nearPlane)
-        cameraGL.center = Qt.vector3d(headX, - headY,0)
+        cameraGL.eye = Qt.vector3d(faceX, - faceY, cameraGL.nearPlane)
+        cameraGL.center = Qt.vector3d(faceX , - faceY,0)
+
+        lightGL.position = Qt.vector3d(faceX, - faceY, cameraGL.nearPlane)
+        lightGL.spotDirection = Qt.vector3d(faceX, - faceY, scene3D.aspectRatio * scene3D.halfScale)
     }
 
     function setSize(newSize){

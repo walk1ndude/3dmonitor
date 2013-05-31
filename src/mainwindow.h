@@ -28,6 +28,8 @@ private:
     qreal aspectRatio, fullHeight;
     bool isValidWindow;
 
+    Size cvFrameSize;
+
     void registerTypes();
     void loadQML();
     void makeConnections(CameraCapture *cvCameraCapture);

@@ -26,8 +26,7 @@ Rectangle {
         // its where we view frames from the camera
         id: cameraOutput
         objectName: "CameraOutput"
-        width: 320
-        height: 240
+        size: Qt.size(320,240)
         renderTarget: "FramebufferObject"
         anchors.left: monitor3D.right
     }
@@ -98,7 +97,7 @@ Rectangle {
     Grid {
         id: keys
         columns: 1
-        rows: 5
+        rows: 8
 
         Text {
             text: qsTr("Key B: get BackProject")
@@ -118,6 +117,15 @@ Rectangle {
 
         Text {
             text: qsTr("Key F: go fullscreen")
+        }
+        Text {
+            text: qsTr("Key Up: timer +10 ms")
+        }
+        Text {
+            text: qsTr("Key Down: timer -10 ms")
+        }
+        Text {
+            text: qsTr("Current timer's interval: ") + trTimer.interval + qsTr(" ms")
         }
 
         anchors.top: paramGrid.bottom
@@ -159,6 +167,13 @@ Rectangle {
             case Qt.Key_F:
                 goFullScreen()
                 break
+            case Qt.Key_Up:
+                trTimer.interval += 10
+                break
+            case Qt.Key_Down:
+                if (trTimer.interval > 10) {
+                    trTimer.interval -= 10
+                }
         }
     }
 

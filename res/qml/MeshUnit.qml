@@ -8,5 +8,4 @@ Quad {
     property real halfScale: scale / 2
     effect: programLayout
     cullFaces: "CullBackFaces"
-    onHalfScaleChanged: scale = 2 * halfScale
 }

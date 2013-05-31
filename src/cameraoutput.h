@@ -15,19 +15,28 @@ class CameraOutput : public QQuickPaintedItem
                WRITE setCameraImage
                NOTIFY signalCameraImageChanged)
 
+    Q_PROPERTY(QSize size
+               READ size
+               WRITE setSize
+               NOTIFY signalSizeChanged)
+
 private:
     QImage cvImage;
+    QSize cvFrameSize;
 
 public:
     explicit CameraOutput(QQuickItem *parent = nullptr);
     QImage cameraImage();
+    QSize size();
 
 signals:
     void signalCameraImageChanged();
+    void signalSizeChanged();
 
 public slots:
     void paint(QPainter *painter);
     void setCameraImage(const QImage &image);
+    void setSize(const QSize &size);
 };
 
 #endif // CAMERAOUTPUT_H

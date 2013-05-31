@@ -27,7 +27,7 @@ class CameraCapture : public QObject
 public:
     explicit CameraCapture(QObject *parent = nullptr);
     ~CameraCapture();
-    bool initializeCV();
+    bool initializeCV(Size cvFrameSize);
 
 private:
     int vmin;
@@ -46,7 +46,7 @@ private:
 
     Size cvFrameSize;
 
-    Point cvAverageHeadPos;
+    Point cvAverageFacePos;
 
     VideoCapture cvCapture;
 
@@ -72,7 +72,7 @@ private:
     void deleteFaceCam();
 
 signals:
-    void signalRedraw(QVariant headX, QVariant headY);
+    void signalRedraw(QVariant faceX, QVariant faceY);
     void signalError(QString);
     void signalRecapture(QImage);
 
