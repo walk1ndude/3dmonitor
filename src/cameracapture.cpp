@@ -2,10 +2,7 @@
 
 #include "cameracapture.h"
 
-#define FACE_CASCADE_PATH "/usr/share/opencv/haarcascades/haarcascade_frontalface_alt2.xml"
-#define EYE_CASCADE_PATH "/usr/share/opencv/haarcascades/haarcascade_eye.xml"
-#define NOSE_CASCADE_PATH "/usr/share/opencv/haarcascades/haarcascade_mcs_nose.xml"
-
+#define FACE_CASCADE_PATH "/usr/share/opencv/haarcascades/haarcascade_frontalface_alt.xml"
 
 CameraCapture::CameraCapture(QObject *parent) : QObject(parent){
 
@@ -50,20 +47,8 @@ bool CameraCapture::initializeCV(Size cvFrameSize){
             qDebug() << "No Face Cascade Found";
             return false;
         }
-        else /*
-        if (!cvCascadeNose.load(NOSE_CASCADE_PATH)){
-                emit signalError("No Nose Cascade Found");
-                qDebug() << "No Nose Cascade Found";
-                return false;
-            }
-            else
-            if (!cvCascadeEye.load(EYE_CASCADE_PATH)){
-                    emit signalError("No Eye Cascade Found");
-                    qDebug() << "No Eye Cascade Found";
-                    return false;
-                }
-                else */ //for some good use ;)
-                    return true;
+        else
+            return true;
 }
 
 void CameraCapture::recapture(){
@@ -169,52 +154,6 @@ void CameraCapture::doHaar(){
      CV_HAAR_DO_CANNY_PRUNING for improvement capture */
     cvCascadeFace.detectMultiScale(cvGray,faces, 1.1, 10,CV_HAAR_FIND_BIGGEST_OBJECT|CV_HAAR_DO_CANNY_PRUNING);
 
-  /*  foreach (Rect r, faces) {
-
-        int x = min(max(r.x,0),cvCameraSize.x),
-            y = min(max(r.y,0),cvCameraSize.y),
-            w = min(r.width,cvCameraSize.x),
-            h = min(r.height,cvCameraSize.y);
-
-        if (x + w > cvCameraSize.x)
-            w = cvCameraSize.x - x;
-        if (y + h > cvCameraSize.y)
-            h = cvCameraSize.y - y;
-
-        rectangle(cvFrame, Point(x,y), Point(x + w,y + h),
-                  Scalar(255, 0, 0), 2, 8, 0 );
-
-        Mat faceNROI(cvFrame, Rect(x,y + h / 4,w,3 * h / 4)),   // let's assume that this is a straight face ;)
-            faceEROI(cvFrame, Rect(x,y,w,h / 2));
-
-        cvtColor(faceNROI,cvGray,CV_BGR2GRAY);
-        cvtColor(faceEROI,cvGray,CV_BGR2GRAY);
-
-        vector<Rect>nose,eye;
-
-        cvCascadeEye.detectMultiScale(faceEROI,eye, 1.1, 5, CV_HAAR_SCALE_IMAGE
-                                       |CV_HAAR_FIND_BIGGEST_OBJECT|CV_HAAR_DO_CANNY_PRUNING,
-                                       Size(4,4));
-
-        foreach (Rect re, eye) {
-
-            rectangle(cvFrame, Point(x + re.x,y + re.y), Point(x + re.x + re.width,
-                      y + re.y + re.height),Scalar(255, 255, 0), 2, 8, 0 );
-
-        }
-
-        cvCascadeNose.detectMultiScale(faceNROI,nose, 1.1, 3, CV_HAAR_SCALE_IMAGE
-                                       |CV_HAAR_FIND_BIGGEST_OBJECT|CV_HAAR_DO_CANNY_PRUNING,
-                                       Size(4,4));
-
-        foreach (Rect rn, nose) {
-
-            rectangle(cvFrame, Point(x + rn.x,y + rn.y), Point(x + rn.x + rn.width,
-                      y + rn.y + rn.height),Scalar(0, 0, 255), 2, 8, 0 );
-
-        }
-
-    }*/
     // if we capture a face (or something, that resembles it)
 
     if (!faces.empty())

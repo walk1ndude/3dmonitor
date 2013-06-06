@@ -51,8 +51,6 @@ private:
     VideoCapture cvCapture;
 
     CascadeClassifier cvCascadeFace;
-    CascadeClassifier cvCascadeNose;
-    CascadeClassifier cvCascadeEye;
 
     Mat cvFrame;
 
