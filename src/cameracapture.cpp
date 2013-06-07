@@ -2,7 +2,13 @@
 
 #include "cameracapture.h"
 
-#define FACE_CASCADE_PATH "/usr/share/opencv/haarcascades/haarcascade_frontalface_alt.xml"
+#ifdef Q_OS_WIN32
+    #define FACE_CASCADE_PATH "C:\opencv\data\haarcascades\haarcascade_frontalface_alt.xml"
+#endif
+
+#ifdef Q_OS_LINUX
+    #define FACE_CASCADE_PATH "/usr/share/opencv/haarcascades/haarcascade_frontalface_alt.xml"
+#endif
 
 CameraCapture::CameraCapture(QObject *parent) : QObject(parent){
 
